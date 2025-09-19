@@ -1,35 +1,71 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
+import List from "./components/List";
+import type { Task, ColumnKey } from "./types";
+
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [newText, setNewText] = useState<string>("");
+
+  
+  const addTask = () => {
+    const text = newText.trim();
+    if (!text) return; 
+    const newTask: Task = {
+      id: Date.now().toString(), 
+      text,
+      column: "todo",           
+    };
+    setTasks(prev => [...prev, newTask]); 
+    setNewText("");
+  };
+
+  const moveTask = (taskId: string, to: ColumnKey) => {
+    setTasks(prev => prev.map(t => (t.id === taskId ? { ...t, column: to } : t)));
+  };
+
+  const clearDone = () => {
+    setTasks(prev => prev.filter(t => t.column !== "done"));
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="page">
+      <h2>Task List</h2>
+
+      <div className="addbar">
+        <input
+          value={newText}
+          onChange={(e) => setNewText(e.target.value)}
+          placeholder="New task for To Do"
+        />
+        <button onClick={addTask}>Add</button>
+
+        <button id="clear-done" onClick={clearDone}>Clear Done</button>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+
+      <div id="container">
+        <List
+          title="To Do"
+          columnKey="todo"
+          tasks={tasks.filter(t => t.column === "todo")}
+          onDropTo={moveTask}
+        />
+        <List
+          title="In Progress"
+          columnKey="inprogress"
+          tasks={tasks.filter(t => t.column === "inprogress")}
+          onDropTo={moveTask}
+        />
+        <List
+          title="Done"
+          columnKey="done"
+          tasks={tasks.filter(t => t.column === "done")}
+          onDropTo={moveTask}
+        />
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;

@@ -1,17 +1,20 @@
 import type { Task } from "../types";
+import React, { useCallback } from "react";
 
 function ItemList({ task }: { task: Task }) {
+  const handleDragStart = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.dataTransfer.setData("text/plain", task.id);
+  }, [task.id]); // зависи от id, не от всего task
+
   return (
     <div
       className="item"
       draggable                          
-      onDragStart={(e) => {
-        e.dataTransfer.setData("text/plain", task.id);
-      }}
+      onDragStart={handleDragStart}
     >
       {task.text}
     </div>
   );
 }
 
-export default ItemList;
+export default React.memo(ItemList);

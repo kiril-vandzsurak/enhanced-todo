@@ -1,4 +1,4 @@
-import { useState, useReducer, useMemo } from "react";
+import { useState, useReducer, useMemo, useCallback } from "react";
 import "./App.css";
 import List from "./components/List";
 import type { Task, ColumnKey } from "./types";
@@ -47,9 +47,9 @@ function App() {
 };
 
 
-  const moveTask = (taskId: string, to: ColumnKey) => {
+  const moveTask = useCallback((taskId: string, to: ColumnKey) => {
   dispatch({ type: "MOVE", taskId, to });
-};
+}, [dispatch]);
 
   const clearDone = () => {
   dispatch({ type: "CLEAR_DONE" });

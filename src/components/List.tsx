@@ -1,5 +1,6 @@
 import ItemList from "./ItemList";
 import type { Task, ColumnKey } from "../types";
+import React, { useCallback } from "react";
 
 type Props = {
   title: string;                                 
@@ -9,28 +10,24 @@ type Props = {
 };
 
 function List({ title, columnKey, tasks, onDropTo }: Props) {
-  return (
-    <div
-      className="list"
-      onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => {
-        const taskId = e.dataTransfer.getData("text/plain");
-        if (taskId) onDropTo(taskId, columnKey);
-      }}
-    >
-      <div className="listHead">
-        <h3>{title}</h3>
-      </div>
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  }, []);
 
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    const taskId = e.dataTransfer.getData("text/plain");
+    if (taskId) onDropTo(taskId, columnKey);
+  }, [onDropTo, columnKey]);
+
+  return (
+    <div className="list" onDragOver={handleDragOver} onDrop={handleDrop}>
+      <div className="listHead"><h3>{title}</h3></div>
       <div className="listBody">
-        {tasks.length === 0 ? (
-          <div className="empty">Drop here</div>
-        ) : (
-          tasks.map(t => <ItemList key={t.id} task={t} />)
-        )}
+        {tasks.length === 0 ? <div className="empty">Drop here</div>
+                            : tasks.map(t => <ItemList key={t.id} task={t} />)}
       </div>
     </div>
   );
 }
 
-export default List;
+export default React.memo(List);

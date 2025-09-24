@@ -58,7 +58,7 @@ function App() {
   function visibleColumns(f: Filter): ColumnKey[] {
     if (f === "all") return ["todo", "inprogress", "done"];
     if (f === "active") return ["todo", "inprogress"];
-    return ["done"]; // completed
+    return ["done"];
   }
 
   const filteredTasks = useMemo(() => {

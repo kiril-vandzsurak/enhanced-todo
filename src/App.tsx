@@ -1,4 +1,4 @@
-import { useState, useReducer } from "react";
+import { useState, useReducer, useMemo } from "react";
 import "./App.css";
 import List from "./components/List";
 import type { Task, ColumnKey } from "./types";
@@ -33,10 +33,10 @@ function tasksReducer(state: Task[], action: Action): Task[] {
 function App() {
   type Filter = "all" | "active" | "completed";
 
-  //const [tasks, setTasks] = useState<Task[]>([]);
   const [tasks, dispatch] = useReducer(tasksReducer, [] as Task[]);
   const [newText, setNewText] = useState<string>("");
   const [filter, setFilter] = useState<Filter>("all");
+  const [search, setSearch] = useState<string>("");
 
   
   const addTask = () => {
@@ -47,18 +47,9 @@ function App() {
 };
 
 
-  //const moveTask = (taskId: string, to: ColumnKey) => {
-    //setTasks(prev => prev.map(t => (t.id === taskId ? { ...t, column: to } : t)));
-  //};
-
   const moveTask = (taskId: string, to: ColumnKey) => {
   dispatch({ type: "MOVE", taskId, to });
 };
-
-
-  //const clearDone = () => {
-    //setTasks(prev => prev.filter(t => t.column !== "done"));
-  //};
 
   const clearDone = () => {
   dispatch({ type: "CLEAR_DONE" });
@@ -69,6 +60,13 @@ function App() {
     if (f === "active") return ["todo", "inprogress"];
     return ["done"]; // completed
   }
+
+  const filteredTasks = useMemo(() => {
+    console.log("Фильтрация пошла");
+    const q = search.toLowerCase();
+
+    return tasks.filter(t => t.text.toLowerCase().includes(q));
+  }, [tasks, search]);
 
   const cols = visibleColumns(filter);
 
@@ -93,13 +91,21 @@ function App() {
         <button onClick={() => setFilter("completed")} disabled={filter==="completed"}>Completed</button>
       </div>
 
+      <div className="searchbar" style={{ marginBottom: 12 }}>
+        <input
+          placeholder="Search..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+         />
+      </div>
+
 
       <div id="container">
         {cols.includes("todo") && (
     <List
       title="To Do"
       columnKey="todo"
-      tasks={tasks.filter(t => t.column === "todo")}
+      tasks={filteredTasks.filter(t => t.column === "todo")}
       onDropTo={moveTask}
     />
   )}
@@ -108,7 +114,7 @@ function App() {
     <List
       title="In Progress"
       columnKey="inprogress"
-      tasks={tasks.filter(t => t.column === "inprogress")}
+      tasks={filteredTasks.filter(t => t.column === "inprogress")}
       onDropTo={moveTask}
     />
   )}
@@ -117,7 +123,7 @@ function App() {
     <List
       title="Done"
       columnKey="done"
-      tasks={tasks.filter(t => t.column === "done")}
+      tasks={filteredTasks.filter(t => t.column === "done")}
       onDropTo={moveTask}
     />
   )}
